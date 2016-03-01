@@ -51,7 +51,7 @@ def kill(channel,msgToSmack):
                 VallianceName = kill[k]['victim']['allianceName']
                 KcharacterName = kill[k]['attackers'][fba]['characterName']
                 message = VcharacterName + ", memeber of " + VcorporationName + " in " + VallianceName + ", was killed at " + killTime + " by " + KcharacterName + " and " + str(noa - 1) + " other pilots pilots. Total value of " + str(totalValue) + " million ISK."
-                msgToSlack(message)
+                msgToSlack(channel,message)
 
             killedValue = round((killedValue + totalValue),1)
             killtot = killtot + 1
