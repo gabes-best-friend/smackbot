@@ -77,4 +77,4 @@ if sc.rtm_connect():
             pass
         time.sleep(1)
 else:
-    print("Connection Failed, broken token? RTM gone wrong")
+    print("Connection Failed, broken token?")
