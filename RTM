@@ -7,8 +7,15 @@ from slackclient import SlackClient
 token = "xoxb-23558244501-24tScTb1KaTymBoR9gaozeBC"
 sc = SlackClient(token)
 
-def msgToSlack(message):
+def msgToSlack(channel,message):
     sc.api_call("chat.postMessage", as_user="true",channel=channel, text=message)
+
+def help(channel):
+    channel = channel
+    helpHelp = "To show help: '@smackbot help'"
+    helpKill = "To show kills: '@smackbot kill 250 list' will list all kills with a minimum value of 250M ISK. To show total kills, without listing them all, leave out 'list'"
+    message = helpHelp + "\n" + helpKill
+    msgToSlack(channel,message)
 
 def kills():
     url = 'https://zkillboard.com/api/kills/corporation/98169716/pastSeconds/86400/'
@@ -17,7 +24,18 @@ def kills():
     kills = json.loads(kills.decode())
     return kills
 
-def kill(minValue,list):
+def kill(channel,msgToSmack):
+    channel = channel
+    msgToSmack = msgToSmack
+    minValue = 1
+    if 'list' in msgToSmack:
+        list = 1
+    else:
+        list = 0
+    msgToSmack = msgToSmack.replace('@U0PGE76ER','')
+    minValue = re.findall('\d+', msgToSmack)
+    minValue = int(minValue[0].replace(',',''))
+    print(minValue)
     killedValue = 0
     killtot = 0
     kill = kills()
@@ -41,7 +59,7 @@ def kill(minValue,list):
             killtot = killtot + 1
 
     message = "AMD was involved in " + str(killtot) + " kills with a total value of " + str(killedValue) + " million ISK the last 24 hours, excluding kills worth less than " + str(minValue) + " million ISK."
-    msgToSlack(message)
+    msgToSlack(channel,message)
 
 if sc.rtm_connect():
     while True:
@@ -49,21 +67,15 @@ if sc.rtm_connect():
         print(rtm_read)
         try:
             if rtm_read[0]['type']=='message':
-                if '@U0PGE76ER' in rtm_read[0]['text']:
-                    if 'list' in rtm_read[0]['text']:
-                        list = 1
-                    else:
-                        list = 0
-                    channel = rtm_read[0]['channel']
-                    user = rtm_read[0]['user']
-                    msgToSmack = rtm_read[0]['text']
-                    text = rtm_read[0]['text']
-                    text = text.replace('@U0PGE76ER','')
-                    minValue = re.findall('\d+', text)
-                    minValue = int(minValue[0].replace(',',''))
-                    kill(minValue,list)
+                channel = rtm_read[0]['channel']
+                msgToSmack = rtm_read[0]['text']
+                if '@U0PGE76ER' in msgToSmack:
+                    if 'help' in msgToSmack:
+                        help(channel)
+                    if 'kill' in msgToSmack:
+                        kill(channel,msgToSmack)
         except(KeyError,IndexError):
             pass
         time.sleep(1)
 else:
-    print("Connection Failed, invalid token? RTM gone wrong")
+    print("Connection Failed, broken token? RTM gone wrong")
