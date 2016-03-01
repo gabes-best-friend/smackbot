@@ -27,7 +27,6 @@ def kills():
 def kill(channel,msgToSmack):
     channel = channel
     msgToSmack = msgToSmack
-    minValue = 1
     if 'list' in msgToSmack:
         list = 1
     else:
