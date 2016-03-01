@@ -1,0 +1,69 @@
+import time
+import re
+import json
+import urllib.request
+from slackclient import SlackClient
+
+token = "xoxb-23558244501-24tScTb1KaTymBoR9gaozeBC"
+sc = SlackClient(token)
+
+def msgToSlack(message):
+    sc.api_call("chat.postMessage", as_user="true",channel=channel, text=message)
+
+def kills():
+    url = 'https://zkillboard.com/api/kills/corporation/98169716/pastSeconds/86400/'
+    f = urllib.request.urlopen(url)
+    kills = f.read()
+    kills = json.loads(kills.decode())
+    return kills
+
+def kill(minValue,list):
+    killedValue = 0
+    killtot = 0
+    kill = kills()
+    for k in range(len(kill)):
+        if (kill[k]['zkb']['totalValue']/1000000) >= minValue:
+            totalValue = round((kill[k]['zkb']['totalValue']/1000000),1)
+            noa = len(kill[k]['attackers'])
+            for i in range(noa):
+                if kill[k]['attackers'][i]['finalBlow'] == 1:
+                    fba = i
+            if list == 1:
+                killTime = kill[k]['killTime']
+                VcharacterName = kill[k]['victim']['characterName']
+                VcorporationName = kill[k]['victim']['corporationName']
+                VallianceName = kill[k]['victim']['allianceName']
+                KcharacterName = kill[k]['attackers'][fba]['characterName']
+                message = VcharacterName + ", memeber of " + VcorporationName + " in " + VallianceName + ", was killed at " + killTime + " by " + KcharacterName + " and " + str(noa - 1) + " other pilots pilots. Total value of " + str(totalValue) + " million ISK."
+                msgToSlack(message)
+
+            killedValue = round((killedValue + totalValue),1)
+            killtot = killtot + 1
+
+    message = "AMD was involved in " + str(killtot) + " kills with a total value of " + str(killedValue) + " million ISK the last 24 hours, excluding kills worth less than " + str(minValue) + " million ISK."
+    msgToSlack(message)
+
+if sc.rtm_connect():
+    while True:
+        rtm_read = sc.rtm_read()
+        print(rtm_read)
+        try:
+            if rtm_read[0]['type']=='message':
+                if '@U0PGE76ER' in rtm_read[0]['text']:
+                    if 'list' in rtm_read[0]['text']:
+                        list = 1
+                    else:
+                        list = 0
+                    channel = rtm_read[0]['channel']
+                    user = rtm_read[0]['user']
+                    msgToSmack = rtm_read[0]['text']
+                    text = rtm_read[0]['text']
+                    text = text.replace('@U0PGE76ER','')
+                    minValue = re.findall('\d+', text)
+                    minValue = int(minValue[0].replace(',',''))
+                    kill(minValue,list)
+        except(KeyError,IndexError):
+            pass
+        time.sleep(1)
+else:
+    print("Connection Failed, invalid token? RTM gone wrong")

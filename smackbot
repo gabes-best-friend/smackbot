@@ -1,0 +1,49 @@
+import json
+import urllib.request
+from slackclient import SlackClient
+
+token = "xoxb-23558244501-24tScTb1KaTymBoR9gaozeBC"
+sc = SlackClient(token)
+chan = "C0PHB73N2"
+
+def send_to_slack(message):
+    sc.api_call("chat.postMessage", as_user="true",channel=chan, text=message)
+
+def kills():
+    url = 'https://zkillboard.com/api/kills/corporation/98169716/pastSeconds/86400/'
+    f = urllib.request.urlopen(url)
+    kills = f.read()
+    kills = json.loads(kills.decode())
+    return kills
+
+
+def kill():
+    minValue = 50000000
+    killedValue = 0
+    killtot = 0
+    kill = kills()
+    for k in range(len(kill)):
+        if kill[k]['zkb']['totalValue'] >= minValue:
+            killTime = kill[k]['killTime']
+            totalValue = round((kill[k]['zkb']['totalValue']/1000000),1)
+
+            VcharacterName = kill[k]['victim']['characterName']
+            VcorporationName = kill[k]['victim']['corporationName']
+            VallianceName = kill[k]['victim']['allianceName']
+
+            noa = len(kill[k]['attackers'])
+            for i in range(noa):
+                if kill[k]['attackers'][i]['finalBlow'] == 1:
+                    fba = i
+
+            KcharacterName = kill[k]['attackers'][fba]['characterName']
+            killedValue = round((killedValue + totalValue),1)
+            killtot = killtot + 1
+
+            print(
+                VcharacterName + ", memeber of " + VcorporationName + " in " + VallianceName + ", was killed at " + killTime + " by " + KcharacterName + " and " + str(
+                    noa - 1) + " other pilots pilots. Total value of " + str(totalValue) + " million ISK.")
+
+    print("AMD was involved in " + str(killtot) + " kills with a total value of " + str(killedValue) + " million ISK the last 24 hours, excluding kills worth less than " + str(minValue/1000000) + " million ISK.")
+
+kill()
