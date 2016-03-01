@@ -29,14 +29,11 @@ def kill(channel,msgToSmack):
     else:
         list = 0
     msgToSmack = msgToSmack.replace('@U0PGE76ER','')
-    #minValue = re.findall('\d+', msgToSmack)
-    #minValue = int(minValue[0].replace(',',''))
     minValue = re.findall('\d+', msgToSmack)
-    print(minValue)
-    minValue = int(minValue[0].replace(',',''))
-    print(minValue)
-    if minValue == '':
+    if not len(minValue):
         minValue = 1
+    else:
+        minValue = int(minValue[0].replace(',',''))
     killedValue = 0
     killtot = 0
     kill = kills()
