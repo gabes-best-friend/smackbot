@@ -1,7 +1,6 @@
 import time
 import re
-import json
-import urllib.request
+import requests
 from slackclient import SlackClient
 
 token = "xoxb-23558244501-24tScTb1KaTymBoR9gaozeBC"
@@ -19,9 +18,7 @@ def help(channel):
 
 def kills():
     url = 'https://zkillboard.com/api/kills/corporation/98169716/pastSeconds/86400/'
-    f = urllib.request.urlopen(url)
-    kills = f.read()
-    kills = json.loads(kills.decode())
+    kills = requests.get(url).json()
     return kills
 
 def kill(channel,msgToSmack):
@@ -32,9 +29,14 @@ def kill(channel,msgToSmack):
     else:
         list = 0
     msgToSmack = msgToSmack.replace('@U0PGE76ER','')
+    #minValue = re.findall('\d+', msgToSmack)
+    #minValue = int(minValue[0].replace(',',''))
     minValue = re.findall('\d+', msgToSmack)
+    print(minValue)
     minValue = int(minValue[0].replace(',',''))
     print(minValue)
+    if minValue == '':
+        minValue = 1
     killedValue = 0
     killtot = 0
     kill = kills()
